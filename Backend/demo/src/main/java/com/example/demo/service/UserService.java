@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.UserDTO;
 import com.example.demo.entity.Department;
 import com.example.demo.entity.Role;
 import com.example.demo.entity.User;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -101,6 +103,13 @@ public class UserService {
 
     public User createUser(User user) {
         return userRepository.save(user);
+    }
+
+    public List<UserDTO> getAllSupervisor() {
+        return userRepository.findAllByRole(Role.ENSEIGNANT)
+            .stream()
+            .map(user -> new UserDTO(user.getUserId(),user.getName(),user.getEmail(),user.getRole(),user.getDepartmentname()))
+            .collect(Collectors.toList());
     }
 
     public User updateUser(Integer id, User userDetails) {

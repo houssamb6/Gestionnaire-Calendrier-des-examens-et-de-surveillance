@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.UserDTO;
 import com.example.demo.entity.User;
 import com.example.demo.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,12 @@ public class UserController {
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> users = userService.getAllUsers();
         return new ResponseEntity<>(users, HttpStatus.OK);
+    }
+
+    @GetMapping("/supervisors")
+    public ResponseEntity<List<UserDTO>> getAllSupervisors() {
+        List<UserDTO> supervisors = userService.getAllSupervisor();
+        return new ResponseEntity<>(supervisors, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")

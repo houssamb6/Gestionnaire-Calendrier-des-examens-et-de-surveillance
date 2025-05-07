@@ -150,6 +150,9 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
-  
+
+    public String getDepartmentname() {
+        return (this.department != null) ? this.department.getName() : "No Department";
+    }
 
 }
