@@ -37,6 +37,7 @@ public class RoomController {
         }
     }
 
+
     @PutMapping("/{id}")
     public ResponseEntity<?> updateRoom(@PathVariable int id, @RequestBody Room room) {
     try {
@@ -62,4 +63,11 @@ public class RoomController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting room " + e.getMessage());
         }
     }
+
+    
+    @GetMapping("/available")
+    public List<Room> getAvailableRooms() {
+        return roomService.getAvailableRooms();
+    }
+
 }

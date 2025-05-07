@@ -201,7 +201,7 @@ export function RoomForm({ room, onSubmit, onCancel }) {
                       tabIndex="-1"
                     >
                       <span className="sr-only">Decrease</span>
-                      <span className="block w-4 h-4 flex items-center justify-center text-gray-600">−</span>
+                      <span className="block w-4 h-4 items-center justify-center text-gray-600">−</span>
                     </button>
                     <button 
                       type="button"
@@ -210,7 +210,7 @@ export function RoomForm({ room, onSubmit, onCancel }) {
                       tabIndex="-1"
                     >
                       <span className="sr-only">Increase</span>
-                      <span className="block w-4 h-4 flex items-center justify-center text-gray-600">+</span>
+                      <span className="block w-4 h-4 items-center justify-center text-gray-600">+</span>
                     </button>
                   </div>
                 </div>

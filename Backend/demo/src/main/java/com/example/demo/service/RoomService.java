@@ -23,6 +23,10 @@ public class RoomService {
         return roomRepository.findAll();
     }
 
+    public List<Room> getAvailableRooms() {
+        return roomRepository.findByIsAvailable(true);
+    }
+    
     public Room createRoom(Room room) {
         return roomRepository.save(room);
     }

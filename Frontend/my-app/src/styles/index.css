@@ -22,6 +22,7 @@
     animation: wave 10s infinite linear;
 }
 
+
 /* Theme variables */
 @layer base {
     :root {
@@ -84,7 +85,9 @@
         --sidebar-border: 240 3.7% 15.9%;
         --sidebar-ring: 217.2 91.2% 59.8%;
     }
+    
 }
+
 
 /* Default styles */
 @layer base {
@@ -106,6 +109,7 @@
     .text-foreground {
         color: hsl(var(--foreground));
     }
+    
 }
 
   

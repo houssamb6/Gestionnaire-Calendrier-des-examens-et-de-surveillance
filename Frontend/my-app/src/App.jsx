@@ -7,6 +7,7 @@ import ChefDashboard from "./pages/chefdep";
 import Supervisors from "./pages/Supervisors"
 import AddExam from './pages/Exam';
 import RoomsPage from './pages/Rooms';
+import Schedule from './pages/CalendarExemple';
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
       <Route path="/dashboard/admin/supervisors" element={<Supervisors />} />
       <Route path="/dashboard/admin/exams" element={<AddExam />} />
       <Route path="/dashboard/admin/rooms" element={<RoomsPage />} />
+      <Route path="/dashboard/admin/schedule" element={<Schedule />} />
 
     </Routes>
   );

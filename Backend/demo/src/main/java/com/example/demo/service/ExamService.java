@@ -49,7 +49,6 @@ public class ExamService {
 
 
 
-
     public List<ExamDTO> getAllExams() {
         return examRepository.findAll()
             .stream()
@@ -135,12 +134,20 @@ public class ExamService {
         }
         if (examRoomRepository.existsByExam(exam)) {
             List<ExamRoom> examStudents = examRoomRepository.findByExam(exam);
+            examStudents.forEach(examRoom -> {
+                // Delete the associated room if it exists
+                if (examRoom.getRoom() != null) {
+                    examRoom.getRoom().setIsAvailable(true); // Remove the association
+                }
+            });
             examRoomRepository.deleteAll(examStudents);
         }
         if(validationRepository.existsByExamId(exam)){
             List<Validation> validations = validationRepository.findByExamId(exam);
             validationRepository.deleteAll(validations);
         }
+        
+        
 
         // Delete all associated Invigilators if any
         List<Invigilator> invigilators = invigilatorRepository.findByExam(exam);

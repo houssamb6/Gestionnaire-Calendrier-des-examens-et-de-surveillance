@@ -89,7 +89,7 @@ function AddExam() {
   const sidebarItems = [
     { icon: Home, label: 'Dashboard', path: '/dashboard/admin/'},
     { icon: BookOpen, label: 'Exams', path: '/dashboard/admin/exams' , active: true },
-    { icon: Calendar, label: 'Schedule', path: '/schedule' },
+    { icon: Calendar, label: 'Schedule', path: '/dashboard/admin/schedule' },
     { icon: Users, label: 'Supervisors', path: '/dashboard/admin/supervisors' },
     { icon: MapPin, label: 'Rooms', path: '/dashboard/admin/rooms' },
     { icon: FileText, label: 'Reports', path: '/reports' },
@@ -245,8 +245,8 @@ const calculateDuration = (startTime, endTime) => {
   {/* Footer */}
   <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
     <div className="flex items-center space-x-3 px-2">
-      <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-        <User className="w-4 h-4 text-gray-600" />
+    <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center">
+    <User className="w-4 h-4 text-white" />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-gray-900 truncate">Admin User</p>
