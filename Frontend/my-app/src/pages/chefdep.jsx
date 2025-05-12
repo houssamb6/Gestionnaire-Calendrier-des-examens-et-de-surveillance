@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useEffect, useState } from "react";
+import { jwtDecode } from "jwt-decode"; // Import jwt-decode
 import { Calendar, Users, BookOpen, MapPin, Bell, CheckCircle, Mail, Menu, X, Home, AlertTriangle, FileText, ClipboardList, UserCheck, GraduationCap } from 'lucide-react';
 
 function ChefDashboard() {
@@ -7,7 +8,10 @@ function ChefDashboard() {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState('pending');
 
-  const departmentName = "Computer Science";
+  const [departmentName, setDepartmentName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [name , setName] = useState("");
 
   const filters = [
     { id: 'date', label: 'Date', icon: Calendar },
@@ -77,6 +81,49 @@ function ChefDashboard() {
     },
   ];
 
+  const fetchDepartmentName = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+
+      if (token) {
+        const decodedToken = jwtDecode(token);
+        const department = decodedToken.department;
+        const f = decodedToken.name;
+        setName(f);
+
+        // Map department to user-friendly name
+        let displayName = department;
+        switch (department) {
+          case "Math":
+            displayName = "Math";
+            break;
+          case "Info":
+            displayName = "Informatique";
+            break;
+          case "Technique":
+            displayName = "Technique";
+            break;
+          default:
+            displayName = department;
+        }
+
+        setDepartmentName(displayName);
+      } else {
+        setError("Token not found");
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setError("Error loading data. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDepartmentName();
+  }, []);
+
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
@@ -130,7 +177,7 @@ function ChefDashboard() {
                 >
                   <Menu className="w-6 h-6 text-gray-600" />
                 </button>
-                <h1 className="text-3xl font-bold text-gray-900 ml-4">Department Dashboard</h1>
+                <h1 className="text-3xl font-bold text-gray-900 ml-4">Department Dashboard, Welcome {name}</h1>
               </div>
               <div className="flex items-center space-x-4">
                 <button 

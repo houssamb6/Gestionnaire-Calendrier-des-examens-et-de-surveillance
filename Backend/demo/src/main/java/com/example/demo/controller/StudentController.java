@@ -38,6 +38,14 @@ public class StudentController {
         return studentService.createStudent(student);
     }
 
+    
+    @GetMapping("/programs")
+    public List<String> getAllDistinctPrograms() {
+        return studentService.getAllDistinctPrograms();
+    }
+    
+
+
     @PutMapping("/{id}")
     public Student updateStudent(@PathVariable Integer id, @RequestBody Student studentDetails) {
         return studentService.updateStudent(id, studentDetails);

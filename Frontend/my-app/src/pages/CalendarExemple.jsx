@@ -39,17 +39,22 @@ const ExamAdminInterface = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const [rooms, setRooms] = useState([]);
+  const [student, setStudent] = useState(null);
+  const [supervisors,setSupervisors]= useState([]);
   const [examRoom,setExamRoom] = useState(null);
   const [room, setRoom] = useState(null);
+  const [programs, setPrograms] = useState([]);
+  const [selectedProgramm, setSelectedProgramm] = useState(null);
   const [showSelectedRoom, setShowSelectedRoom] = useState(false);
   const possibleTypes = ['quiz', 'midterm', 'final', 'project'];
 
  
   const sidebarItems = [
-    { icon: Home, label: 'Dashboard', path: '/dashboard/admin/'},
-    { icon: BookOpen, label: 'Exams', path: '/dashboard/admin/exams'  },
-    { icon: Calendar, label: 'Schedule', path: '/dashboard/admin/schedule', active: true },
+    { icon: Home, label: 'Dashboard', path: '/dashboard/admin/' },
+    { icon: BookOpen, label: 'Exams', path: '/dashboard/admin/exams' },
+    { icon: Calendar, label: 'Schedule', path: '/dashboard/admin/schedule' , active: true },
     { icon: Users, label: 'Supervisors', path: '/dashboard/admin/supervisors' },
+    { icon: Users, label: 'Students', path: '/dashboard/admin/students'},
     { icon: MapPin, label: 'Rooms', path: '/dashboard/admin/rooms' },
     { icon: FileText, label: 'Reports', path: '/reports' },
     { icon: ClipboardList, label: 'Validations', path: '/validations' },
@@ -58,41 +63,77 @@ const ExamAdminInterface = () => {
 
 
   useEffect(() => {
-    const fetchAssignedRooms = async () => {
+    const fetchprograms = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem("token"); // ✅ Retrieve token
+
         if (!token) {
           console.error("No token found in localStorage");
-          return;
+          return; // Stop execution if token is missing
         }
-  
-        const response = await axios.get("http://localhost:8000/api/exam-rooms", {
+
+        const response = await axios.get("http://localhost:8000/api/students/programs", {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`, // ✅ Pass token in headers
             "Content-Type": "application/json",
           },
           withCredentials: true,
         });
-  
         if (Array.isArray(response.data)) {
-          const assignments = response.data.map((item) => ({
-            examId: item.exam.examId,
-            roomId: item.room.roomId,
-            roomName: item.room?.roomName || "Unknown",
-            examSubject: item.exam?.subject || "Unknown",
-          }));
-  
-          setExamRoom(assignments); // or use setAssignedRooms(assignments) for clarity
+          setPrograms(response.data);
         } else {
           console.error("Expected an array but got:", response.data);
         }
       } catch (error) {
-        console.error("Failed to fetch exam-room assignments:", error.response ? error.response.data : error);
+        console.error(
+          "Failed to fetch supervisor:",
+          error.response ? error.response.data : error
+        );
       }
     };
-  
-    fetchAssignedRooms();
-  }, []);  
+    fetchprograms();
+  }, []);
+
+  useEffect(() => {
+    const fetchSupervisors = async () => {
+      try {
+        const token = localStorage.getItem("token"); // ✅ Retrieve token
+
+        if (!token) {
+          console.error("No token found in localStorage");
+          return; // Stop execution if token is missing
+        }
+
+        const response = await axios.get("http://localhost:8000/api/users/supervisors", {
+          headers: {
+            Authorization: `Bearer ${token}`, // ✅ Pass token in headers
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        });
+
+        if (Array.isArray(response.data)) {
+          // ✅ Add `duration` (in minutes) & `status: "DRAFT"` to each exam
+          const supersWithExtraFields = response.data.map((sper) => ({
+            ...sper,
+            id: sper.userId,
+            Name: sper.name,
+            department: sper.department,
+          }));
+
+          setSupervisors(supersWithExtraFields);
+        } else {
+          console.error("Expected an array but got:", response.data);
+        }
+      } catch (error) {
+        console.error(
+          "Failed to fetch supervisor:",
+          error.response ? error.response.data : error
+        );
+      }
+    };
+    fetchSupervisors();
+  }, []);
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -148,60 +189,78 @@ const ExamAdminInterface = () => {
           return;
         }
   
-        // Step 1: Fetch assigned room info
-        const assignedRes = await axios.get("http://localhost:8000/api/exam-rooms", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        });
+        // Fetching all the data concurrently using Promise.all
+        const [assignedStud,assignedStu ,assignedRes, examRes] = await Promise.all([
+          axios.get("http://localhost:8000/api/exam-students", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            withCredentials: true,
+          }),
+          axios.get("http://localhost:8000/api/students", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            withCredentials: true,
+          }),
+          axios.get("http://localhost:8000/api/invigilators", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            withCredentials: true,
+          }),
+          axios.get("http://localhost:8000/api/exams", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            withCredentials: true,
+          }),
+        ]);
   
+        // Extract data from the responses
         const assignedRooms = Array.isArray(assignedRes.data) ? assignedRes.data : [];
+        const examData = Array.isArray(examRes.data) ? examRes.data : [];
   
-        // Step 2: Fetch exams
-        const examRes = await axios.get("http://localhost:8000/api/exams", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
+        const processedExams = examData.map((exam) => {
+          const examDate = exam.examDate ? new Date(exam.examDate) : new Date();
+          const matchedRoom = assignedRooms.find((entry) => entry.exam.examId === exam.examId);
+          const assignedStudents = Array.isArray(assignedStud.data) ? assignedStud.data : [];
+          const assignedStudentsData = Array.isArray(assignedStu.data) ? assignedStu.data : [];
+
+          // Step 1: Filter the assigned students for the selected exam
+          const filteredStudents = assignedStudents.filter(
+            (student) => student.examId === exam.examId
+          );
+          
+          const filteredStudent = assignedStudentsData.filter(
+            (student) => student.studentId === exam.examId
+          );
+          return {
+            id: exam.examId,
+            title: exam.subject,
+            date: examDate,
+            startTime: removeSeconds(exam.startTime),
+            endTime: removeSeconds(exam.endTime),
+            room: matchedRoom?.room?.roomName || "Not assigned",
+            location: matchedRoom?.room?.location || "No location", // ✅ Add location
+            type: possibleTypes[Math.floor(Math.random() * possibleTypes.length)],
+            subject: exam.departmentName,
+            students: exam.enrolledStudents || 20,
+            status: exam.status?.toLowerCase() || "draft",
+            department: exam.departmentName,
+            duration: calculateDuration(exam.startTime, exam.endTime),
+            courseCode: exam.courseCode,
+            rawData: exam,
+            supervisor: matchedRoom?.user?.name || "Not assigned",
+          };
         });
   
-        if (Array.isArray(examRes.data)) {
-          const processedExams = examRes.data.map((exam) => {
-            const examDate = exam.examDate ? new Date(exam.examDate) : new Date();
-  
-            // Step 3: Match examId to assigned room
-            const matchedRoom = assignedRooms.find(
-              (entry) => entry.exam.examId === exam.examId
-            );
-  
-            return {
-              id: exam.examId,
-              title: exam.subject,
-              date: examDate,
-              startTime: removeSeconds(exam.startTime),
-              endTime: removeSeconds(exam.endTime),
-              room: matchedRoom?.room?.roomName || "Not assigned",
-              location: matchedRoom?.room?.location || "No location", // ✅ Add location
-              type: possibleTypes[Math.floor(Math.random() * possibleTypes.length)],
-              subject: exam.departmentName,
-              students: exam.enrolledStudents || 20,
-              status: exam.status?.toLowerCase() || "draft",
-              department: exam.departmentName,
-              duration: calculateDuration(exam.startTime, exam.endTime),
-              courseCode: exam.courseCode,
-              rawData: exam,
-            };
-          });
-  
-          setExams(processedExams);
-          setLoading(false);
-        } else {
-          setError("Received unexpected data format from server");
-          setLoading(false);
-        }
+        setExams(processedExams);
+        setLoading(false);
       } catch (error) {
         console.error("Failed to fetch exams:", error.response?.data || error);
         setError("Failed to load exams. Please try again later.");
@@ -211,6 +270,7 @@ const ExamAdminInterface = () => {
   
     fetchExams();
   }, []);
+  
   
 
   const removeSeconds = (time) => time ? time.slice(0, 5) : "";
@@ -682,7 +742,7 @@ const ExamAdminInterface = () => {
                             </div>
                           </div>
                           <div className="mt-2 bg-amber-50 opacity-50 px-4 py-1 rounded text-xs text-gray-800"> 
-                            {exam.students} students enrolled
+                            {exam.students} students enrolled 
                           </div>
                         </div>
                       ))}
@@ -760,10 +820,14 @@ const ExamAdminInterface = () => {
               </div>
               
               <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-medium text-gray-700 mb-2">Location</h4>
+                <h4 className="font-medium text-gray-700 mb-2">Location/Supervisor</h4>
                 <div className="flex items-center">
                   <MapPin className="w-5 h-5 mr-2 text-gray-600" />
                   <span>{selectedExam.room || "Room not assigned"}</span>
+                </div>
+                <div className="flex items-center mb-2 mt-2">
+                  <User className="w-5 h-5 mr-2 text-gray-600" />
+                  <span>{selectedExam.supervisor || "supervisor not assigned"}</span>
                 </div>
                 {selectedExam.department && (
                   <div className="flex items-center mt-2">
@@ -778,7 +842,7 @@ const ExamAdminInterface = () => {
               <h4 className="font-medium text-gray-700 mb-2">Enrollment</h4>
               <div className="flex items-center">
                 <User className="w-5 h-5 mr-2 text-gray-600" />
-                <span>{selectedExam.students} students enrolled</span>
+                <span>{selectedExam.students} students enrolled </span>
               </div>
               <div className="mt-2 w-full bg-gray-200 rounded-full h-2.5">
                 <div 
@@ -800,7 +864,7 @@ const ExamAdminInterface = () => {
             <button 
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition" onClick={() => setShowSelectedRoom(true)}
             >
-              Edit Exam
+              Assign Room/Supervisor
             </button>
           </div>
         </div>
@@ -921,20 +985,24 @@ const renderFilterPanel = () => {
 const SelectRoomPanel = ({ selectedExam, rooms, onClose }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState("");
+  const [selectedSupervisor, setSelectedSupervisor] = useState("");
+  const [selectedProgram, setSelectedProgram] = useState("");
 
   const handleRoomChange = async (e) => {
-    const roomId = e.target.value;
-    setSelectedRoom(roomId);
+    if (!selectedRoom || !selectedSupervisor) return;
+  
     setIsSubmitting(true);
-
+  
     try {
       const token = localStorage.getItem("token");
-
+  
+      // First API request: Assign invigilator to exam and room
       await axios.post(
-        "http://localhost:8000/api/exam-rooms",
+        "http://localhost:8000/api/invigilators",
         {
+          user: { userId: parseInt(selectedSupervisor) },
           exam: { examId: parseInt(selectedExam.id) },
-          room: { roomId: parseInt(roomId) },
+          room: { roomId: parseInt(selectedRoom) },
         },
         {
           headers: {
@@ -944,15 +1012,29 @@ const SelectRoomPanel = ({ selectedExam, rooms, onClose }) => {
           withCredentials: true,
         }
       );
-
+  
+      // Second API request: Add exam-student association (fix URL)
+      await axios.post(
+        `http://localhost:8000/api/exam-students/${selectedExam.id}/${selectedProgram}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+  
       // Optional: Add feedback or refresh exams
-      onClose(); // Close panel after submission
+      onClose();
     } catch (error) {
       console.error("Error submitting form:", error);
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false); // Set state to false once both requests are completed
     }
   };
+  
 
   if (!selectedExam) return null;
 
@@ -960,14 +1042,20 @@ const SelectRoomPanel = ({ selectedExam, rooms, onClose }) => {
     <div className="backdrop fixed inset-0 bg-gray-800/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-xl relative overflow-hidden animate-fadeIn p-4">
         <div className="flex justify-between items-center border-b pb-4 mb-4">
-          <h2 className="text-lg font-semibold">Assign Room to {selectedExam.title}</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-black">✕</button>
+          <h2 className="text-lg font-semibold">
+            Assign Room & Supervisor to {selectedExam.title}
+          </h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-black">
+            ✕
+          </button>
         </div>
 
+        {/* Room Select */}
+        <label className="block mb-2 font-medium">Room</label>
         <select
           value={selectedRoom}
-          onChange={handleRoomChange}
-          className="block w-full p-2 border border-gray-300 rounded"
+          onChange={(e) => setSelectedRoom(e.target.value)}
+          className="block w-full p-2 mb-4 border border-gray-300 rounded"
           disabled={isSubmitting}
         >
           <option value="">Select a Room</option>
@@ -977,6 +1065,45 @@ const SelectRoomPanel = ({ selectedExam, rooms, onClose }) => {
             </option>
           ))}
         </select>
+
+        {/* Supervisor Select */}
+        <label className="block mb-2 font-medium">Supervisor</label>
+        <select
+          value={selectedSupervisor}
+          onChange={(e) => setSelectedSupervisor(e.target.value)}
+          className="block w-full p-2 mb-4 border border-gray-300 rounded"
+          disabled={isSubmitting}
+        >
+          <option value="">Select a Supervisor</option>
+          {supervisors.map((sup) => (
+            <option key={sup.id} value={sup.id}>
+              {sup.name} ({sup.department})
+            </option>
+          ))}
+        </select>
+        {/* Program Select */}
+        <label className="block mb-2 font-medium">Program</label>
+        <select
+          value={selectedProgram}
+          onChange={(e) => setSelectedProgram(e.target.value)}
+          className="block w-full p-2 mb-4 border border-gray-300 rounded"
+          disabled={isSubmitting}
+        >
+          <option value="">Select a Program</option>
+          {programs.map((program, index) => (
+            <option key={index} value={program}>
+              {program}
+            </option>
+          ))}
+        </select>
+
+        <button
+          onClick={handleRoomChange}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+          disabled={isSubmitting || !selectedRoom || !selectedSupervisor}
+        >
+          Assign
+        </button>
       </div>
     </div>
   );

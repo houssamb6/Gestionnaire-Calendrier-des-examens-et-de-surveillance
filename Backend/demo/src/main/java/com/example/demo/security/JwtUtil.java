@@ -36,6 +36,8 @@ public class JwtUtil {
         return Jwts.builder()
         .setSubject(userDetails.getUsername())
         .claim("role",((User) userDetails).getRole().name())
+        .claim("department",((User) userDetails).getDepartmentname())
+        .claim("name",((User) userDetails).getName())
         .setIssuedAt(new Date(System.currentTimeMillis()))
         .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 24 hours
         .signWith(getSignInKey(), SignatureAlgorithm.HS256)
@@ -48,6 +50,8 @@ public class JwtUtil {
             .setClaims(extraClaims)
             .setSubject(userDetails.getUsername())
             .claim("role",((User) userDetails).getRole().name())
+            .claim("department",((User) userDetails).getDepartmentname())
+            .claim("name",((User) userDetails).getName())
             .setIssuedAt(new Date(System.currentTimeMillis()))
             .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 24 hours
             .signWith(getSignInKey(), SignatureAlgorithm.HS256)

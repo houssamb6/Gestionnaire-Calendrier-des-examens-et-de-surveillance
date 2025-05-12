@@ -40,7 +40,6 @@ public class UserService {
         if (role == Role.ADMIN && userRepository.findAll().stream().anyMatch(user -> user.getRole() == Role.ADMIN)) {
             return ResponseEntity.ok("An admin already exists!");
         }
-         
 
         // List of allowed departments
         List<String> allowedDepartments = List.of("Math", "Technique", "Info");
@@ -93,6 +92,14 @@ public class UserService {
         return userRepository.findAll();
     }
 
+    public List<UserDTO> getAllStudents() {
+
+        return userRepository.findAllByRole(Role.ETUDIANT)
+            .stream()
+            .map(user -> new UserDTO(user.getUserId(),user.getName(),user.getEmail(),user.getRole(),user.getDepartmentname(),studentRepository.findByUser(user).map(Student::getProgram).orElse(null)))
+            .collect(Collectors.toList());
+    }
+
     public Optional<User> getUserByEmail(String email) {
         return userRepository.findByEmail(email);
     }
@@ -108,7 +115,7 @@ public class UserService {
     public List<UserDTO> getAllSupervisor() {
         return userRepository.findAllByRole(Role.ENSEIGNANT)
             .stream()
-            .map(user -> new UserDTO(user.getUserId(),user.getName(),user.getEmail(),user.getRole(),user.getDepartmentname()))
+            .map(user -> new UserDTO(user.getUserId(),user.getName(),user.getEmail(),user.getRole(),user.getDepartmentname(), null))
             .collect(Collectors.toList());
     }
 

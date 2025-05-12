@@ -86,11 +86,13 @@ function AddExam() {
     setExams(prev => prev.filter(exam => exam.id !== examId));
     showNotification('Exam deleted successfully!', 'warning');
   };
+
   const sidebarItems = [
-    { icon: Home, label: 'Dashboard', path: '/dashboard/admin/'},
+    { icon: Home, label: 'Dashboard', path: '/dashboard/admin/' },
     { icon: BookOpen, label: 'Exams', path: '/dashboard/admin/exams' , active: true },
     { icon: Calendar, label: 'Schedule', path: '/dashboard/admin/schedule' },
     { icon: Users, label: 'Supervisors', path: '/dashboard/admin/supervisors' },
+    { icon: Users, label: 'Students', path: '/dashboard/admin/students'},
     { icon: MapPin, label: 'Rooms', path: '/dashboard/admin/rooms' },
     { icon: FileText, label: 'Reports', path: '/reports' },
     { icon: ClipboardList, label: 'Validations', path: '/validations' },

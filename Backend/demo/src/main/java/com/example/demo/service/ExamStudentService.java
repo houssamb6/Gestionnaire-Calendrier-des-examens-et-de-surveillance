@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.entity.Exam;
+import com.example.demo.entity.ExamStatus;
 import com.example.demo.entity.ExamStudent;
 import com.example.demo.entity.Student;
 import com.example.demo.repository.ExamRepository;
@@ -53,12 +54,39 @@ public class ExamStudentService {
             throw new IllegalArgumentException("Student with ID " + student.getStudentId() + " is already registered for this exam.");
         }
 
+
+
+
         // Assign the validated entities
         examStudent.setExam(exam);
         examStudent.setStudent(student);
 
         return examStudentRepository.save(examStudent);
     }
+
+    @Transactional
+public void createExamStudentsByProgram(Integer examId, String program, ExamStatus status) {
+    // Validate exam
+    Exam exam = examRepository.findById(examId)
+        .orElseThrow(() -> new IllegalArgumentException("Exam not found with ID: " + examId));
+
+    // Fetch all students by program
+    List<Student> students = studentRepository.findByProgram(program);
+
+    for (Student student : students) {
+        // Avoid duplicates
+        if (examStudentRepository.existsByExamAndStudent(exam, student)) {
+            continue;
+        }
+
+        // Create new ExamStudent
+        ExamStudent examStudent = new ExamStudent();
+        examStudent.setExam(exam);
+        examStudent.setStudent(student);
+        examStudent.setStatus(status);
+        examStudentRepository.save(examStudent);
+    }
+}
 
     @Transactional
 public ExamStudent updateExamStudent(Integer id, ExamStudent updatedExamStudent) {

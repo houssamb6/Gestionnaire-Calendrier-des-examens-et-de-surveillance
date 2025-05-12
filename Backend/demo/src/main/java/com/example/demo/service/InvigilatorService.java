@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.entity.Exam;
+import com.example.demo.entity.ExamRoom;
 import com.example.demo.entity.Invigilator;
 import com.example.demo.entity.Role;
 import com.example.demo.entity.Room;
@@ -13,7 +14,10 @@ import com.example.demo.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -25,6 +29,7 @@ public class InvigilatorService {
     private final UserRepository userRepository;
     private final ExamRepository examRepository;
     private final RoomRepository roomRepository;
+    private final ExamRoomService examRoomService;
 
 
     public List<Invigilator> getAllInvigilators() {
@@ -61,17 +66,20 @@ public class InvigilatorService {
         Room room = roomRepository.findById(invigilator.getRoom().getRoomId())
                 .orElseThrow(() -> new IllegalArgumentException("Room not found with ID: " + invigilator.getRoom().getRoomId()));
 
-        // Check if the user is already assigned as an invigilator for the same exam
-        if (invigilatorRepository.existsByUserAndExam(user, exam)) {
-            throw new IllegalArgumentException("This user is already assigned as an invigilator for this exam.");
-        }
-
         // Set validated entities
         invigilator.setUser(user);
         invigilator.setExam(exam);
         invigilator.setRoom(room);
 
-        return invigilatorRepository.save(invigilator);
+        room.setIsAvailable(false);
+        roomRepository.save(room);
+
+        try {
+    return invigilatorRepository.save(invigilator);
+} catch (DataIntegrityViolationException e) {
+    throw new ResponseStatusException(HttpStatus.CONFLICT, 
+        "This invigilator assignment already exists");
+}
     }
 
     @Transactional

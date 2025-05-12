@@ -44,10 +44,11 @@ function AdminDashboard() {
   ];
 
   const sidebarItems = [
-    { icon: Home, label: 'Dashboard', path: '/dashboard/admin/', active: true },
+    { icon: Home, label: 'Dashboard', path: '/dashboard/admin/' , active: true},
     { icon: BookOpen, label: 'Exams', path: '/dashboard/admin/exams' },
     { icon: Calendar, label: 'Schedule', path: '/dashboard/admin/schedule' },
     { icon: Users, label: 'Supervisors', path: '/dashboard/admin/supervisors' },
+    { icon: Users, label: 'Students', path: '/dashboard/admin/students' },
     { icon: MapPin, label: 'Rooms', path: '/dashboard/admin/rooms' },
     { icon: FileText, label: 'Reports', path: '/reports' },
     { icon: ClipboardList, label: 'Validations', path: '/validations' },

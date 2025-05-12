@@ -31,6 +31,12 @@ public class UserController {
         return new ResponseEntity<>(supervisors, HttpStatus.OK);
     }
 
+    @GetMapping("/students")
+    public ResponseEntity<List<UserDTO>> getAllStudents() {
+        List<UserDTO> students = userService.getAllStudents();
+        return new ResponseEntity<>(students, HttpStatus.OK);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Integer id) {
         Optional<User> user = userService.getUserById(id);

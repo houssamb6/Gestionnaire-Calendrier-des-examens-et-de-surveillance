@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.entity.ExamStatus;
 import com.example.demo.entity.ExamStudent;
 import com.example.demo.service.ExamStudentService;
 
@@ -36,6 +37,19 @@ public class ExamStudentController {
         }
     }
 
+    @PostMapping("/{examId}/{program}")  
+    public ResponseEntity<?> createExamStudentsByProgram(
+            @PathVariable Integer examId, 
+                @PathVariable String program){
+        try {
+            examStudentService.createExamStudentsByProgram(examId, program, ExamStatus.INSCRIT);
+            return ResponseEntity.status(HttpStatus.CREATED).body("ExamStudents created successfully for program: ");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
+        }
+    }
+    
+
     @PutMapping("/{id}")
     public ResponseEntity<?> updateExamStudent(@PathVariable Integer id, @RequestBody ExamStudent updatedExamStudent) {
         try{
@@ -45,6 +59,8 @@ public class ExamStudentController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error"+e.getMessage());
         }    
     }
+
+
     
 
     @GetMapping("/{id}")
